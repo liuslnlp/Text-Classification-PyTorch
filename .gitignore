@@ -2,7 +2,13 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+aclImdb
+datas
+output
+cache
+.vscode
+prcurve.png
+demo.py
 # C extensions
 *.so
 
