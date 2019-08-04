@@ -35,9 +35,10 @@ class MaxPool1d(nn.Module):
 class CNNBlock(nn.Module):
     def __init__(self):
         super().__init__()
+        hidden_dim = 250
         self.pooling = MaxPool1d(3, 2, 1)
-        self.conv1 = CNNLayer(250, 250, 3, 1)
-        self.conv2 = CNNLayer(250, 250, 3, 1)
+        self.conv1 = CNNLayer(hidden_dim, hidden_dim, 3, 1)
+        self.conv2 = CNNLayer(hidden_dim, hidden_dim, 3, 1)
     def forward(self, x):
         res = self.pooling(x)
 
@@ -45,7 +46,7 @@ class CNNBlock(nn.Module):
         x = self.conv1(x)
         x = F.relu(x)
         x = self.conv2(x)
-        
+
         out = x + res
         return out
 
