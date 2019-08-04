@@ -101,10 +101,10 @@ def save_vocab(word_dict, saved_dir):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_dir", type=str, default='aclImdb')
-    parser.add_argument("--output_dir", type=str, default='datas')
-    parser.add_argument("--max_seq_len", type=int, default=256)
-    parser.add_argument("--max_vocab_size", type=int, default=50000)
+    parser.add_argument("-i", "--input_dir", type=str, default='aclImdb', help='Folder of original dataset.')
+    parser.add_argument("-o", "--output_dir", type=str, default='datas', help='Folder to save the tensor format of dataset.')
+    parser.add_argument("--max_seq_len", type=int, default=256, help='Max sequence length.')
+    parser.add_argument("--max_vocab_size", type=int, default=30000, help='Max vocab size.')
     args = parser.parse_args()
 
     logger.info(

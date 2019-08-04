@@ -10,8 +10,7 @@ from pathlib import Path
 from sklearn.metrics import precision_recall_curve
 from sklearn.preprocessing import label_binarize
 import matplotlib.pyplot as plt
-from network.model import BiLSTMAttnModel, CNNAttnModel, CNNModel, LSTMModel, LSTM2Model, TextCNNModel, DPCNNModel
-from network.config import Config
+from network import Config, BiLSTMAttnModel, CNNAttnModel, CNNModel, LSTMModel, TextCNNModel, DPCNNModel
 import shutil
 from util import load_word_dict, load_dataset, test_accuracy
 
@@ -97,23 +96,23 @@ class Trainer(object):
 def main():
     logger = logging.getLogger(__name__)
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_dir", type=str, default='datas')
-    parser.add_argument("--output_dir", type=str, default='output')
-    parser.add_argument("--cache_dir", type=str, default='cache')
+    parser.add_argument("-i", "--input_dir", type=str, default='datas', help='Dir of input data.')
+    parser.add_argument("-o", "--output_dir", type=str, default='output', help='Dir to save trained model.')
+    parser.add_argument("--cache_dir", type=str, default='cache', help='Temporary folder to save trained model.')
     parser.add_argument("--epochs", type=int, default=15)
     parser.add_argument("--batch_size", type=int, default=128)
     parser.add_argument("--lr", type=float, default=0.001)
     parser.add_argument("--print_step", type=int, default=5)
 
-    parser.add_argument("--maxlen", type=int, default=256)
-    parser.add_argument("--embed_dim", type=int, default=256)
-    parser.add_argument("--hidden_dim", type=int, default=128)
-    parser.add_argument("--attn_dim", type=int, default=128)
-    parser.add_argument("--tag_dim", type=int, default=2)
-    parser.add_argument("--n_layer", type=int, default=2)
-    parser.add_argument("--n_block", type=int, default=5)
+    parser.add_argument("--maxlen", type=int, default=256, help='Max sequence length.')
+    parser.add_argument("--embed_dim", type=int, default=256, help='Word embedding dim.')
+    parser.add_argument("--hidden_dim", type=int, default=128, help='Hidden dim.')
+    parser.add_argument("--attn_dim", type=int, default=128, help='Context vector dim(for attention model).')
+    parser.add_argument("--tag_dim", type=int, default=2, help='Target size.')
+    parser.add_argument("--n_layer", type=int, default=2, help='Number of layers(for LSTM).')
+    parser.add_argument("--n_block", type=int, default=5, help='Number of blocks(for DPCNN).')
 
-    parser.add_argument("--no_cuda", action='store_true')
+    parser.add_argument("--no_cuda", action='store_true', help='Whether not use CUDA.')
     args = parser.parse_args()
 
     device = torch.device('cuda' if torch.cuda.is_available()
@@ -138,13 +137,12 @@ def main():
     testloader = DataLoader(testset, batch_size=args.batch_size)
 
     models = [
-        # CNNModel(config),
+        CNNModel(config),
         TextCNNModel(config),
         DPCNNModel(config),
-        # LSTMModel(config),
-        # LSTM2Model(config),
-        # CNNAttnModel(config),
-        # BiLSTMAttnModel(config),
+        CNNAttnModel(config),
+        LSTMModel(config),
+        BiLSTMAttnModel(config),
     ]
     for model in models:
         trainer = Trainer(model, trainloader, testloader, device, args)

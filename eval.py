@@ -51,7 +51,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data_dir", type=str, default='datas')
     parser.add_argument("--model_dir", type=str, default='output')
-    parser.add_argument("--name", type=str, default='prcurve.png')
+    parser.add_argument("--name", type=str, default='prcurve.png', help='Path to save PR-Curve, such as XXX/XXX.png, XXX.svg, XX.jpg')
     parser.add_argument("--no_cuda", action='store_true')
     args = parser.parse_args()
 
