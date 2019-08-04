@@ -115,6 +115,8 @@ def main():
     parser.add_argument("--tag_dim", type=int, default=2, help='Target size.')
     parser.add_argument("--n_layer", type=int, default=2, help='Number of layers(for LSTM).')
     parser.add_argument("--n_block", type=int, default=5, help='Number of blocks(for DPCNN).')
+    parser.add_argument("--dropout", type=float, default=0.2, help='Dropout prob of multi-layer LSTM.')
+
 
     parser.add_argument("--no_cuda", action='store_true', help='Whether not use CUDA.')
     args = parser.parse_args()
@@ -127,7 +129,7 @@ def main():
     padding_id = word_to_ix['[PAD]']
     config = Config(vocab=vocab_size, embed_dim=args.embed_dim, padding_id=padding_id,
                     hidden_dim=args.hidden_dim, tag_dim=args.tag_dim, n_layer=args.n_layer,
-                    attn_dim=args.attn_dim, max_seq_len=args.max_seq_len, n_block=args.n_block)
+                    attn_dim=args.attn_dim, max_seq_len=args.max_seq_len, n_block=args.n_block, dropout=args.dropout)
 
     logger.info(f"***** Loading data *****")
     train_tokens, train_labels = load_dataset(input_dir, 'train')

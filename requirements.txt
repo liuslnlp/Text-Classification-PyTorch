@@ -1,6 +1,6 @@
 pandas
 matplotlib
-torch==1.1.0
+torch
 nltk
 scikit_learn
 
