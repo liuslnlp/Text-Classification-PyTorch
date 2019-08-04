@@ -16,16 +16,17 @@ pos and 25k neg). We also include an additional 50,000 unlabeled
 documents for unsupervised learning. 
 ## Get Start
 1. **Install all the required package.**   
-`cd Text-Classification-PyTorch`  
-`pip install -r requirements.txt` 
+`$ cd Text-Classification-PyTorch`  
+`$ pip install -r requirements.txt` 
 2. **Download dataset**  
-`wget http://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz`   
-`tar -zxvf aclImdb_v1.tar.gz`  
+`$ wget http://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz`   
+`$ tar -zxvf aclImdb_v1.tar.gz`  
 3. **Initialize data.**  
-`python initialize.py`  
+`$ python initialize.py`  
 4. **Train.**  
-`python train.py`  
+`$ !rm -rf output`  
+`$ python train.py`  
 5. **Evaluation.**  
-`python eval.py` 
+`$ python eval.py` 
 6. **Check evaluation results**  
 Open `--name` file to view PR curve.

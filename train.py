@@ -139,7 +139,7 @@ def main():
 
     models = [
         # CNNModel(config),
-        # TextCNNModel(config),
+        TextCNNModel(config),
         DPCNNModel(config),
         # LSTMModel(config),
         # LSTM2Model(config),

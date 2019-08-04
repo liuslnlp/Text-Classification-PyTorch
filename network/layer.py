@@ -39,10 +39,13 @@ class CNNBlock(nn.Module):
         self.conv1 = CNNLayer(250, 250, 3, 1)
         self.conv2 = CNNLayer(250, 250, 3, 1)
     def forward(self, x):
-        x = F.relu(x)
         res = self.pooling(x)
-        x = self.conv1(res)
+
+        x = F.relu(res)
+        x = self.conv1(x)
+        x = F.relu(x)
         x = self.conv2(x)
+        
         out = x + res
         return out
 
