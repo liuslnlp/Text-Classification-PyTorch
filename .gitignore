@@ -4,8 +4,10 @@ __pycache__/
 *$py.class
 aclImdb
 datas
+data
 output
 cache
+.idea
 .vscode
 prcurve.png
 demo.py

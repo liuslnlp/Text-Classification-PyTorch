@@ -3,7 +3,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from .layer import LSTMLayer, CNNLayer, AttnLayer, CNNBlock
 
-__all__=["LSTMModel", "CNNModel", "TextCNNModel", "DPCNNModel", "BiLSTMAttnModel", "CNNAttnModel"] 
+__all__ = ["LSTMModel", "CNNModel", "TextCNNModel", "DPCNNModel", "BiLSTMAttnModel", "CNNAttnModel"]
+
 
 class LSTMModel(nn.Module):
     def __init__(self, config):
@@ -15,13 +16,15 @@ class LSTMModel(nn.Module):
 
     def forward(self, x):
         """
-        x : shape=(batch_size, max_len)
+        Args:
+            x: shape=(batch_size, max_seq_len).
         """
         x = self.embedding(x)
-        x =  self.lstm(x)
+        x = self.lstm(x)
         x = x[:, -1, :]
         out = self.linear(x)
         return out
+
 
 # class LSTM2Model(nn.Module):
 #     def __init__(self, config):
@@ -54,12 +57,17 @@ class CNNModel(nn.Module):
         self.linear = nn.Linear(config.hidden_dim, config.tag_dim)
 
     def forward(self, x):
+        """
+        Args:
+            x: shape=(batch_size, max_seq_len).
+        """
         x = self.embedding(x)
         x = self.conv(x)
         x, _ = torch.max(x, dim=1)
         x = F.relu(x)
         out = self.linear(x)
         return out
+
 
 class TextCNNModel(nn.Module):
     def __init__(self, config):
@@ -75,6 +83,10 @@ class TextCNNModel(nn.Module):
         self.linear = nn.Linear(config.hidden_dim * 3, config.tag_dim)
 
     def forward(self, x):
+        """
+        Args:
+            x: shape=(batch_size, max_seq_len).
+        """
         x = self.embedding(x)
         # feat1.shape = (batch_size, len-1, 2)
         feat1 = F.relu(self.conv1(x))
@@ -82,7 +94,7 @@ class TextCNNModel(nn.Module):
         feat2 = F.relu(self.conv2(x))
         # feat1.shape = (batch_size, len-3, 2)
         feat3 = F.relu(self.conv3(x))
-        
+
         # feat1.shape = (batch_size, 2)
         feat1, _ = torch.max(feat1, dim=1)
         # feat2.shape = (batch_size, 2)
@@ -96,6 +108,7 @@ class TextCNNModel(nn.Module):
         out = self.linear(feat)
         return out
 
+
 class DPCNNModel(nn.Module):
     def __init__(self, config):
         super().__init__()
@@ -106,9 +119,11 @@ class DPCNNModel(nn.Module):
         self.conv2 = CNNLayer(hidden_dim, hidden_dim, 3, 1)
         self.blocks = nn.Sequential(*[CNNBlock() for _ in range(config.n_block)])
         self.linear = nn.Linear(hidden_dim, config.tag_dim)
+
     def forward(self, x):
         """
-        x : shape=(batch_size, max_len)
+        Args:
+            x: shape=(batch_size, max_seq_len).
         """
         # x : shape=(batch_size, max_len, embed_dim)
         emb = self.embedding(x)
@@ -126,7 +141,6 @@ class DPCNNModel(nn.Module):
         x, _ = torch.max(x, dim=1)
         out = self.linear(x)
         return out
-
 
 
 class BiLSTMAttnModel(nn.Module):
@@ -147,6 +161,7 @@ class BiLSTMAttnModel(nn.Module):
         out = self.linear(x)
         return out
 
+
 class CNNAttnModel(nn.Module):
     def __init__(self, config):
         super().__init__()
@@ -157,7 +172,8 @@ class CNNAttnModel(nn.Module):
 
     def forward(self, x):
         """
-        x : shape=(batch_size, max_len)
+        Args:
+            x: shape=(batch_size, max_seq_len).
         """
         x = self.embedding(x)
         x = self.cnn(x)

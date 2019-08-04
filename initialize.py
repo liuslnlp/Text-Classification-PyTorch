@@ -1,24 +1,25 @@
-from typing import List, Dict, Mapping
+from typing import List, Dict
 from collections import defaultdict
 from pathlib import Path
-import pickle
+from util import save_dataset, save_word_dict
 import torch
 import argparse
 import nltk
 import re
 import logging
+
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
 
-# nltk.download('punkt')
+nltk.download('punkt')
+
 
 class Corpus(object):
     def __init__(self, input_dir):
-        train_neg_dir = f'{args.input_dir}/train/neg'
-        train_pos_dir = f'{args.input_dir}/train/pos'
-        test_neg_dir = f'{args.input_dir}/test/neg'
-        test_pos_dir = f'{args.input_dir}/test/pos'
+        train_neg_dir = f'{input_dir}/train/neg'
+        train_pos_dir = f'{input_dir}/train/pos'
+        test_neg_dir = f'{input_dir}/test/neg'
+        test_pos_dir = f'{input_dir}/test/pos'
 
         self.train_neg_tokens = self.load_data(train_neg_dir)
         self.train_pos_tokens = self.load_data(train_pos_dir)
@@ -43,9 +44,9 @@ class Corpus(object):
         return tokens
 
 
-def stat_word_freq(cp):
+def stat_word_freq(c):
     freq_dict = defaultdict(int)
-    for data in (cp.train_neg_tokens, cp.train_pos_tokens, cp.test_neg_tokens, cp.test_pos_tokens):
+    for data in (c.train_neg_tokens, c.train_pos_tokens, c.test_neg_tokens, c.test_pos_tokens):
         for tokens in data:
             for token in tokens:
                 freq_dict[token] += 1
@@ -59,8 +60,8 @@ def add_to_vocab(word, word_dict_ref):
 
 def build_vocab(freq_dict, max_size):
     word_dict = {'[PAD]': 0, '[UNK]': 1}
-    sorted_items = sorted(freq_dict.items(),  key=lambda t: t[1], reverse=True)[
-        :max_size]
+    sorted_items = sorted(freq_dict.items(), key=lambda t: t[1], reverse=True)[
+                   :max_size]
     for word, _ in sorted_items:
         add_to_vocab(word, word_dict)
     return word_dict
@@ -68,10 +69,11 @@ def build_vocab(freq_dict, max_size):
 
 @torch.jit.script
 def convert_tokens_to_ids(datas: List[List[str]], word_dict: Dict[str, int], cls: int, max_seq_len: int):
+    """Use @torch.jit.script to speed up."""
     total = len(datas)
     token_ids = torch.full((total, max_seq_len),
                            word_dict['[PAD]'], dtype=torch.long)
-    labels = torch.full((total, ), cls, dtype=torch.long)
+    labels = torch.full((total,), cls, dtype=torch.long)
     for i in range(total):
         seq_len = len(datas[i])
         for j in range(min(seq_len, max_seq_len)):
@@ -89,20 +91,12 @@ def create_dataset(neg, pos, word_dict, max_seq_len):
     return tokens, labels
 
 
-def save_dataset(neg, pos, saved_dir, dsettype):
-    torch.save(neg, saved_dir / f'{dsettype}_tokens.pt')
-    torch.save(pos, saved_dir / f'{dsettype}_labels.pt')
-
-
-def save_vocab(word_dict, saved_dir):
-    with open(saved_dir / 'vocab.dict', 'wb') as f:
-        pickle.dump(word_dict, f)
-
-
 if __name__ == "__main__":
+    logger = logging.getLogger(__name__)
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input_dir", type=str, default='aclImdb', help='Folder of original dataset.')
-    parser.add_argument("-o", "--output_dir", type=str, default='datas', help='Folder to save the tensor format of dataset.')
+    parser.add_argument("-o", "--output_dir", type=str, default='data',
+                        help='Folder to save the tensor format of dataset.')
     parser.add_argument("--max_seq_len", type=int, default=256, help='Max sequence length.')
     parser.add_argument("--max_vocab_size", type=int, default=30000, help='Max vocab size.')
     args = parser.parse_args()
@@ -132,7 +126,7 @@ if __name__ == "__main__":
     saved_dir.mkdir(parents=True, exist_ok=True)
 
     logger.info("Saving dataset and word dict...")
-    save_vocab(word_dict, saved_dir)
+    save_word_dict(word_dict, saved_dir)
     save_dataset(train_tokens, train_labels, saved_dir, 'train')
     save_dataset(test_tokens, test_labels, saved_dir, 'test')
 
