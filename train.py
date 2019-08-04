@@ -10,7 +10,7 @@ from pathlib import Path
 from sklearn.metrics import precision_recall_curve
 from sklearn.preprocessing import label_binarize
 import matplotlib.pyplot as plt
-from network.model import BiLSTMAttnModel, CNNAttnModel, CNNModel, LSTMModel, LSTM2Model
+from network.model import BiLSTMAttnModel, CNNAttnModel, CNNModel, LSTMModel, LSTM2Model, TextCNNModel, DPCNNModel
 from network.config import Config
 import shutil
 from util import load_word_dict, load_dataset, test_accuracy
@@ -23,9 +23,9 @@ logging.basicConfig(level=logging.INFO,
 class ModelCache(object):
     def __init__(self, model_ref, model_name, cache_dir):
         self.model = model_ref
-        self.name = model_name 
+        self.name = model_name
         self.cache_dir = cache_dir
-    
+
     def cache_model(self, epoch):
         filename = f"{self.name}_{epoch}.pkl"
         filename = self.cache_dir / filename
@@ -33,7 +33,7 @@ class ModelCache(object):
 
     def clear_cache(self):
         if self.cache_dir.exists():
-            shutil.rmtree(self.cache_dir) 
+            shutil.rmtree(self.cache_dir)
 
     def move_best_cache(self, scores, target_dir):
         epoch = scores.argmax().item()
@@ -41,6 +41,7 @@ class ModelCache(object):
         src_filename = self.cache_dir / filename
         dst_filename = target_dir / filename
         shutil.copyfile(src_filename, dst_filename)
+
 
 class Trainer(object):
     def __init__(self, model, trainloader, testloader, device, args):
@@ -65,10 +66,10 @@ class Trainer(object):
         self.trainloader = trainloader
         self.testloader = testloader
         self.test_acc_lst = torch.zeros(args.epochs)
-    
+
     def fit(self):
         args = self.args
-        model = self.model 
+        model = self.model
         device = self.device
         logger = self.logger
         for epoch in range(args.epochs):
@@ -92,6 +93,7 @@ class Trainer(object):
         self.mche.move_best_cache(self.test_acc_lst, self.output_dir)
         self.mche.clear_cache()
 
+
 def main():
     logger = logging.getLogger(__name__)
     parser = argparse.ArgumentParser()
@@ -108,6 +110,9 @@ def main():
     parser.add_argument("--hidden_dim", type=int, default=128)
     parser.add_argument("--attn_dim", type=int, default=128)
     parser.add_argument("--tag_dim", type=int, default=2)
+    parser.add_argument("--n_layer", type=int, default=2)
+    parser.add_argument("--n_block", type=int, default=5)
+
     parser.add_argument("--no_cuda", action='store_true')
     args = parser.parse_args()
 
@@ -118,24 +123,28 @@ def main():
     vocab_size = len(word_to_ix)
     padding_id = word_to_ix['[PAD]']
     config = Config(vocab=vocab_size, embed_dim=args.embed_dim, padding_id=padding_id,
-                    hidden_dim=args.hidden_dim, tag_dim=args.tag_dim, n_layer=2, attn_dim=args.attn_dim, max_seq_len=args.maxlen)
-    
+                    hidden_dim=args.hidden_dim, tag_dim=args.tag_dim, n_layer=args.n_layer, 
+                    attn_dim=args.attn_dim, max_seq_len=args.maxlen, n_block=args.n_block)
+
     logger.info(f"***** Loading data *****")
     train_tokens, train_labels = load_dataset(input_dir, 'train')
     test_tokens, test_labels = load_dataset(input_dir, 'test')
 
     trainset = TensorDataset(train_tokens, train_labels)
-    trainloader = DataLoader(trainset, batch_size=args.batch_size, shuffle=True)
+    trainloader = DataLoader(
+        trainset, batch_size=args.batch_size, shuffle=True)
 
     testset = TensorDataset(test_tokens, test_labels)
     testloader = DataLoader(testset, batch_size=args.batch_size)
 
     models = [
-        CNNModel(config),
-        LSTMModel(config),
-        LSTM2Model(config),
-        CNNAttnModel(config),
-        BiLSTMAttnModel(config),
+        # CNNModel(config),
+        # TextCNNModel(config),
+        DPCNNModel(config),
+        # LSTMModel(config),
+        # LSTM2Model(config),
+        # CNNAttnModel(config),
+        # BiLSTMAttnModel(config),
     ]
     for model in models:
         trainer = Trainer(model, trainloader, testloader, device, args)

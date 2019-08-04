@@ -17,6 +17,35 @@ class CNNLayer(nn.Module):
         cnn_out = self.conv(cnn_in).permute(0, 2, 1)
         return cnn_out
 
+
+class MaxPool1d(nn.Module):
+    def __init__(self, win=2, stride=None, pad=0):
+        super().__init__()
+        self.pooling = nn.MaxPool1d(kernel_size=win, stride=stride, padding=pad)
+    def forward(self, x):
+        """
+        x.shape=(batch_size, max_seq_len, dim)
+        """
+        # x.shape=(batch_size, dim, max_seq_len)
+        x = x.permute(0, 2, 1)
+        x = self.pooling(x).permute(0, 2, 1)
+        return x
+
+
+class CNNBlock(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.pooling = MaxPool1d(3, 2, 1)
+        self.conv1 = CNNLayer(250, 250, 3, 1)
+        self.conv2 = CNNLayer(250, 250, 3, 1)
+    def forward(self, x):
+        x = F.relu(x)
+        res = self.pooling(x)
+        x = self.conv1(res)
+        x = self.conv2(x)
+        out = x + res
+        return out
+
 class LSTMLayer(nn.Module):
     def __init__(self, in_dim, out_dim, n_layer, dropout=0, bi=False):
         super().__init__()
