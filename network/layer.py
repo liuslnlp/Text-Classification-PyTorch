@@ -7,7 +7,6 @@ class CNNLayer(nn.Module):
         super().__init__()
         self.conv = nn.Conv1d(in_channels=in_dim,
                               out_channels=out_dim, kernel_size=win, padding=pad)
-        self.act = nn.ReLU()
 
     def forward(self, x):
         # x.shape=(batch_size, max_seq_len, input_dim)
@@ -16,8 +15,7 @@ class CNNLayer(nn.Module):
         # self.conv(cnn_in).shape=(batch_size, hidden_dim, max_seq_len)
         # cnn_out.shape=(batch_size, max_seq_len, hidden_dim)
         cnn_out = self.conv(cnn_in).permute(0, 2, 1)
-        out = self.act(cnn_out)
-        return out
+        return cnn_out
 
 class LSTMLayer(nn.Module):
     def __init__(self, in_dim, out_dim, n_layer, dropout=0, bi=False):

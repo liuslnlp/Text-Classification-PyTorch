@@ -10,7 +10,7 @@ from pathlib import Path
 from sklearn.metrics import precision_recall_curve
 from sklearn.preprocessing import label_binarize
 import matplotlib.pyplot as plt
-from network.model import BiLSTMAttnModel, CNNAttnModel, CNNModel, LSTMModel
+from network.model import BiLSTMAttnModel, CNNAttnModel, CNNModel, LSTMModel, LSTM2Model
 from network.config import Config
 import shutil
 from util import load_word_dict, load_dataset, test_accuracy
@@ -133,6 +133,7 @@ def main():
     models = [
         CNNModel(config),
         LSTMModel(config),
+        LSTM2Model(config),
         CNNAttnModel(config),
         BiLSTMAttnModel(config),
     ]
