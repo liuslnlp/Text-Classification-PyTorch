@@ -4,6 +4,12 @@ import torch.nn.functional as F
 
 
 class CNNLayer(nn.Module):
+    """Conv1d layer.
+    nn.Conv1d layer require the input shape is (batch_size, in_channels, length),
+    however, our input shape is (batch_size, length, in_channels), so we need to
+    transpose our input data into (B, C, L_in) and send it to conv layer, and
+    then transpose the conv output into (B, L_out, C).
+    """
     def __init__(self, in_dim, out_dim, win=3, pad=1):
         super().__init__()
         self.conv = nn.Conv1d(in_channels=in_dim,
@@ -14,12 +20,12 @@ class CNNLayer(nn.Module):
         Args:
             x: shape=(batch_size, max_seq_len, input_dim)
         """
-        # cnn_in.shape=(batch_size, input_dim, max_seq_len)
-        cnn_in = x.permute(0, 2, 1)
-        # self.conv(cnn_in).shape=(batch_size, hidden_dim, max_seq_len)
-        # cnn_out.shape=(batch_size, max_seq_len, hidden_dim)
-        cnn_out = self.conv(cnn_in).permute(0, 2, 1)
-        return cnn_out
+        # x.shape=(batch_size, input_dim, max_seq_len)
+        x = x.permute(0, 2, 1)
+        # self.conv(x).shape=(batch_size, hidden_dim, max_seq_len)
+        # out.shape=(batch_size, max_seq_len, hidden_dim)
+        out = self.conv(x).permute(0, 2, 1)
+        return out
 
 
 class MaxPool1d(nn.Module):
@@ -52,11 +58,9 @@ class CNNBlock(nn.Module):
     def forward(self, x):
         res = self.pooling(x)
         # pre-activation
-        x = F.relu(res)
-        x = self.conv1(x)
-        x = F.relu(x)
-        x = self.conv2(x)
-
+        x = self.conv1(F.relu(res))
+        x = self.conv2(F.relu(x))
+        # res sum.
         out = x + res
         return out
 
@@ -92,9 +96,9 @@ class AttnLayer(nn.Module):
         """
         x: shape=(batch_size, max_len, hidden_dim)
         """
-        # query : shape=(batch_size, max_len, attn_dim)
+        # query.shape=(batch_size, max_len, attn_dim)
         query = self.weight(x).tanh()
-        # scores : shape=(batch_size, max_len)
+        # scores.shape=(batch_size, max_len)
         scores = torch.einsum('bld,d->bl', query, self.context)
         scores = F.softmax(scores, dim=-1)
         # attn_vec.shape=(batch_size, hidden_dim)

@@ -1,5 +1,5 @@
 # Text-Classification-PyTorch
-Text classification tutorial by PyTorch.
+This repo implements 6 text classification algorithms(`CNN`, `CNN+Attention`, `TextCNN`, `DPCNN`, `LSTM`, `Bi-LSTM+Attention`) and a train-eval pipeline.
 ## Requirements
 * python 3.6+
 * torch==1.1.0
@@ -18,7 +18,7 @@ documents for unsupervised learning.
 1. **Install all the required package.**   
 `$ cd Text-Classification-PyTorch`  
 `$ pip install -r requirements.txt` 
-2. **Download dataset**  
+2. **Download dataset.**  
 `$ wget http://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz`   
 `$ tar -zxvf aclImdb_v1.tar.gz`  
 3. **Initialize data.**  
@@ -31,7 +31,7 @@ Or use `$ python train.py -h` for help.
 5. **Evaluation.**  
 `$ python eval.py`  
 Or use `$ python eval.py -h` for help.  
-6. **Check evaluation results**  
+6. **Check evaluation results.**  
 Open `--name` file to view PR curve.
 ## Training in Google Colab
 https://colab.research.google.com/drive/1VJmSx-vThBFlGZYJ9sKWDMINKWOzFNCD
@@ -42,39 +42,26 @@ https://colab.research.google.com/drive/1VJmSx-vThBFlGZYJ9sKWDMINKWOzFNCD
 `$ docker run -it wisedoge/text_clf_pytorch`
 ## Results
 ### Parameters
-| #    | Param           | Mini | Base  | Large |
-| ---- | --------------- | ---- | ----- | ----- |
-| 1    | Vocab           | 6000 | 30000 | 30000 |
-| 2    | Max len         | 128  | 256   | 512   |
-| 3    | Embedding dim   | 64   | 256   | 256   |
-| 4    | Hidden dim      | 64   | 128   | 512   |
-| 5    | Attn dim        | 64   | 128   | 256   |
-| 6    | Dropout         | 0.2  | 0.2   | 0.2   |
-| 7    | Num LSTM layer  | 2    | 3     | 3     |
-| 8    | Num DPCNN block | 5    | 7     | 8     |
+| #    | Param           | CNN   | TextCNN | DPCNN | CNNAtt | LSTM  | BiLSTMAtt |
+| ---- | --------------- | ----- | ------- | ----- | ------ | ----- | --------- |
+| 1    | Vocab           | 30000 | 30000   | 30000 | 30000  | 30000 | 30000     |
+| 2    | Max len         | 256   | 256     | 256   | 256    | 256   | 256       |
+| 3    | Embedding dim   | 256   | 256     | 256   | 256    | 256   | 256       |
+| 4    | Hidden dim      | 512   | 256     | 250   | 128    | 128   | 512       |
+| 5    | Attn dim        | -     | -       | -     | 64     | -     | 64        |
+| 6    | Dropout         | -     | -       | -     | -      | 0.2   | -         |
+| 7    | Num LSTM layer  | -     | -       | -     | -      | 2     | -         |
+| 8    | Num DPCNN block | -     | -       | 2     | -      | -     | -         |
 
-| #          | Used Parameters |
-| ---------- | --------------- |
-| LSTM       | 1,2,3,4,6,7     |
-| CNNAttn    | 1,2,3,4,5       |
-| CNN        | 1,2,3,4         |
-| BiLSTMAttn | 1,2,3,4,5       |
-| TextCNN    | 1,2,3           |
-| DPCNN      | 1,2,3,8         |
 ### Accuracy
-| #          | Mini        | Base        | Large       |
-| ---------- | ----------- | ----------- | ----------- |
-| LSTM       | 0.75860     | 0.78552     | 0.60808     |
-| CNNAttn    | 0.79340     | 0.82924     | 0.83192     |
-| CNN        | 0.84788     | 0.86588     | 0.89580     |
-| BiLSTMAttn | 0.84812     | 0.83052     | 0.87396     |
-| TextCNN    | 0.85752     | **0.87776** | **0.90012** |
-| DPCNN      | **0.85872** | 0.86100     | 0.87968     |
+| More ActionsModel name | Accuracy on test set |
+| ---------------------- | -------------------- |
+| LSTM                   | 0.82340              |
+| CNNAttn                | 0.84516              |
+| CNN                    | 0.85100              |
+| BiLSTMAttn             | 0.87780              |
+| TextCNN                | 0.87848              |
+| DPCNN                  | **0.87904**          |
 ### PR-Curve
-**Mini**  
-![](docs/mini.svg)  
-**Base**  
-![](docs/base.svg)  
-**Large**  
-![](docs/large.svg)  
+![](docs/prcurve.svg)  
 

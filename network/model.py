@@ -26,26 +26,26 @@ class LSTMModel(nn.Module):
         return out
 
 
-# class LSTM2Model(nn.Module):
-#     def __init__(self, config):
-#         super().__init__()
-#         self.embedding = nn.Embedding(
-#             config.vocab, config.embed_dim, padding_idx=config.padding_id)
-#         self.lstm = LSTMLayer(config.embed_dim, config.hidden_dim, config.n_layer, dropout=config.dropout)
-#         self.linear = nn.Linear(config.hidden_dim, config.tag_dim)
-#         self.padding_id = config.padding_id
+class LSTM2Model(nn.Module):
+    def __init__(self, config):
+        super().__init__()
+        self.embedding = nn.Embedding(
+            config.vocab, config.embed_dim, padding_idx=config.padding_id)
+        self.lstm = LSTMLayer(config.embed_dim, config.hidden_dim, config.n_layer, dropout=config.dropout)
+        self.linear = nn.Linear(config.hidden_dim, config.tag_dim)
+        self.padding_id = config.padding_id
 
-#     def forward(self, x):
-#         """
-#         x : shape=(batch_size, max_len)
-#         """
-#         batch_size, max_len = x.shape
-#         lens = max_len - (x == self.padding_id).sum(dim=-1)
-#         x = self.embedding(x)
-#         x =  self.lstm(x)
-#         x = x[torch.arange(batch_size), lens - 1, :]
-#         out = self.linear(x)
-#         return out
+    def forward(self, x):
+        """
+        x : shape=(batch_size, max_len)
+        """
+        batch_size, max_len = x.shape
+        lens = max_len - (x == self.padding_id).sum(dim=-1)
+        x = self.embedding(x)
+        x =  self.lstm(x)
+        x = x[torch.arange(batch_size), lens - 1, :]
+        out = self.linear(x)
+        return out
 
 
 class CNNModel(nn.Module):
@@ -61,10 +61,14 @@ class CNNModel(nn.Module):
         Args:
             x: shape=(batch_size, max_seq_len).
         """
+        # x.shape=(batch_size, max_seq_len, embed_dim)
         x = self.embedding(x)
+        # x.shape=(batch_size, max_seq_len, hidden_dim)
         x = self.conv(x)
-        x, _ = torch.max(x, dim=1)
+        # x.shape=(batch_size, hidden_dim)
+        x, _ = torch.max(x, dim=1) 
         x = F.relu(x)
+        # out.shape=(batch_size, tag_dim)
         out = self.linear(x)
         return out
 
@@ -88,23 +92,22 @@ class TextCNNModel(nn.Module):
             x: shape=(batch_size, max_seq_len).
         """
         x = self.embedding(x)
-        # feat1.shape = (batch_size, len-1, 2)
+        # feat1.shape = (batch_size, len-1, hidden_dim)
         feat1 = F.relu(self.conv1(x))
-        # feat1.shape = (batch_size, len-2, 2)
+        # feat1.shape = (batch_size, len-2, hidden_dim)
         feat2 = F.relu(self.conv2(x))
-        # feat1.shape = (batch_size, len-3, 2)
+        # feat1.shape = (batch_size, len-3, hidden_dim)
         feat3 = F.relu(self.conv3(x))
 
-        # feat1.shape = (batch_size, 2)
+        # feat1.shape = (batch_size, hidden_dim)
         feat1, _ = torch.max(feat1, dim=1)
-        # feat2.shape = (batch_size, 2)
+        # feat2.shape = (batch_size, hidden_dim)
         feat2, _ = torch.max(feat2, dim=1)
-        # feat3.shape = (batch_size, 2)
+        # feat3.shape = (batch_size, hidden_dim)
         feat3, _ = torch.max(feat3, dim=1)
 
-        # feat1.shape = (batch_size, 6)
+        # feat1.shape = (batch_size, hidden_dim *　３)
         feat = torch.cat([feat1, feat2, feat3], -1)
-
         out = self.linear(feat)
         return out
 
@@ -125,20 +128,21 @@ class DPCNNModel(nn.Module):
         Args:
             x: shape=(batch_size, max_seq_len).
         """
-        # x : shape=(batch_size, max_len, embed_dim)
+        # x．shape=(batch_size, max_len, embed_dim)
         emb = self.embedding(x)
-        # x : shape=(batch_size, max_len, 250)
+        # x．shape=(batch_size, max_len, 250)
         emb = self.region_embedding(emb)
-        # x : shape=(batch_size, max_len, 250)
+        # x．shape=(batch_size, max_len, 250)
         x = F.relu(emb)
         x = self.conv1(x)
-        # x : shape=(batch_size, max_len, 250)
+        # x．shape=(batch_size, max_len, 250)
         x = F.relu(x)
         x = self.conv2(x)
-        # x : shape=(batch_size, max_len / 2^n_block, 250)
+        # x．shape=(batch_size, max_len / 2^n_block, 250)
         x = self.blocks(x + emb)
-        # x : shape=(batch_size, 250)
+        # x．shape=(batch_size, 250)
         x, _ = torch.max(x, dim=1)
+        # out.shape=(batch_size, tag_dim)
         out = self.linear(x)
         return out
 

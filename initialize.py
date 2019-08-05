@@ -11,7 +11,7 @@ import logging
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-nltk.download('punkt')
+
 
 
 class Corpus(object):
@@ -44,7 +44,8 @@ class Corpus(object):
         return tokens
 
 
-def stat_word_freq(c):
+def stat_word_freq(c:Corpus):
+    """Count the frequency of every word."""
     freq_dict = defaultdict(int)
     for data in (c.train_neg_tokens, c.train_pos_tokens, c.test_neg_tokens, c.test_pos_tokens):
         for tokens in data:
@@ -54,11 +55,13 @@ def stat_word_freq(c):
 
 
 def add_to_vocab(word, word_dict_ref):
+    """Add a word to word dict."""
     if word not in word_dict_ref:
         word_dict_ref[word] = len(word_dict_ref)
 
 
-def build_vocab(freq_dict, max_size):
+def build_vocab(freq_dict:Dict[str, int], max_size:int):
+    """Build word dict based on the frequency of every word."""
     word_dict = {'[PAD]': 0, '[UNK]': 1}
     sorted_items = sorted(freq_dict.items(), key=lambda t: t[1], reverse=True)[
                    :max_size]
@@ -92,6 +95,7 @@ def create_dataset(neg, pos, word_dict, max_seq_len):
 
 
 if __name__ == "__main__":
+    nltk.download('punkt')
     logger = logging.getLogger(__name__)
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input_dir", type=str, default='aclImdb', help='Folder of original dataset.')

@@ -8,7 +8,7 @@ class Config(object):
         hidden_dim: int, hidden dimension of LSTM/CNN.
         tag_dim: int, target size, in IMDB dataset is 2.
         max_seq_len: int, max sequence length.
-        dropout: float, dropout prob of multi-layer LSTM.
+        dropout: float, dropout probability of multi-layer LSTM and some CNN models.
         n_layer: int, number of LSTM layers.
         attn_dim: int, context vector dimension(for attention model).
         n_block: int, number of DPCNN blocks.

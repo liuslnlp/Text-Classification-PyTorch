@@ -34,13 +34,15 @@ class ModelCache(object):
         if self.cache_dir.exists():
             shutil.rmtree(self.cache_dir)
 
-    def move_best_cache(self, scores, target_dir):
+    def move_best_cache(self, scores, target_dir, verbose=True):
         """
         Find the model with the best score,
         and save it to output folder.
         """
-        epoch = scores.argmax().item()
-        filename = f"{self.name}_{epoch}.pkl"
+        best_score, epoch = torch.max(scores, 0)
+        if verbose:
+            print(f"Model name: {self.name}, Best epoch: {epoch.item()}, Best score: {best_score.item()}")
+        filename = f"{self.name}_{epoch.item()}.pkl"
         src_filename = self.cache_dir / filename
         dst_filename = target_dir / filename
         shutil.copyfile(src_filename, dst_filename)
@@ -100,6 +102,8 @@ class Trainer(object):
 def main():
     logger = logging.getLogger(__name__)
     parser = argparse.ArgumentParser()
+    model_map={'1': CNNModel, '2':TextCNNModel, '3':DPCNNModel, '4':CNNAttnModel, '5':LSTMModel, '6':BiLSTMAttnModel}
+
     parser.add_argument("-i", "--input_dir", type=str, default='data', help='Dir of input data.')
     parser.add_argument("-o", "--output_dir", type=str, default='output', help='Dir to save trained model.')
     parser.add_argument("--cache_dir", type=str, default='cache', help='Temporary folder to save trained model.')
@@ -115,10 +119,12 @@ def main():
     parser.add_argument("--tag_dim", type=int, default=2, help='Target size.')
     parser.add_argument("--n_layer", type=int, default=2, help='Number of layers(for LSTM).')
     parser.add_argument("--n_block", type=int, default=5, help='Number of blocks(for DPCNN).')
-    parser.add_argument("--dropout", type=float, default=0.2, help='Dropout prob of multi-layer LSTM.')
-
-
+    parser.add_argument("--dropout", type=float, default=0.2, help='Dropout probability.')
     parser.add_argument("--no_cuda", action='store_true', help='Whether not use CUDA.')
+    parser.add_argument("--alg", type=str, default='123456', help=f'Model to train. {model_map}')
+
+
+
     args = parser.parse_args()
 
     device = torch.device('cuda' if torch.cuda.is_available()
@@ -131,30 +137,29 @@ def main():
                     hidden_dim=args.hidden_dim, tag_dim=args.tag_dim, n_layer=args.n_layer,
                     attn_dim=args.attn_dim, max_seq_len=args.max_seq_len, n_block=args.n_block, dropout=args.dropout)
 
-    logger.info(f"***** Loading data *****")
+    logger.info(f"***** Loading train data. *****")
     train_tokens, train_labels = load_dataset(input_dir, 'train')
+    logger.info(f"***** Loading test data. *****")
     test_tokens, test_labels = load_dataset(input_dir, 'test')
 
+    logger.info(f"***** Building data loader. *****")
     trainset = TensorDataset(train_tokens, train_labels)
     trainloader = DataLoader(
         trainset, batch_size=args.batch_size, shuffle=True)
-
     testset = TensorDataset(test_tokens, test_labels)
     testloader = DataLoader(testset, batch_size=args.batch_size)
 
-    models = [
-        CNNModel(config),
-        TextCNNModel(config),
-        DPCNNModel(config),
-        CNNAttnModel(config),
-        LSTMModel(config),
-        BiLSTMAttnModel(config),
-    ]
+    
+
+    logger.info(f"***** Initializing models. *****")
+    models = [v(config) for k, v in model_map.items() if k in args.alg]
+    logger.info(f"***** Training. *****")
     for model in models:
         trainer = Trainer(model, trainloader, testloader, device, args)
         logger.info(f"Training {trainer.model_name}...")
         trainer.fit()
 
+    logger.info(f"***** All Done. *****")
 
 if __name__ == "__main__":
     main()
