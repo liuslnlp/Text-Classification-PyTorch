@@ -44,17 +44,17 @@ https://colab.research.google.com/drive/1VJmSx-vThBFlGZYJ9sKWDMINKWOzFNCD
 ### Parameters
 | #    | Param           | CNN   | TextCNN | DPCNN | CNNAtt | LSTM  | BiLSTMAtt |
 | ---- | --------------- | ----- | ------- | ----- | ------ | ----- | --------- |
-| 1    | Vocab           | 30000 | 30000   | 30000 | 30000  | 30000 | 30000     |
-| 2    | Max len         | 256   | 256     | 256   | 256    | 256   | 256       |
+| 1    | Vocab size      | 30000 | 30000   | 30000 | 30000  | 30000 | 30000     |
+| 2    | Max seq len     | 256   | 256     | 256   | 256    | 256   | 256       |
 | 3    | Embedding dim   | 256   | 256     | 256   | 256    | 256   | 256       |
 | 4    | Hidden dim      | 512   | 256     | 250   | 128    | 128   | 512       |
-| 5    | Attn dim        | -     | -       | -     | 64     | -     | 64        |
-| 6    | Dropout         | -     | -       | -     | -      | 0.2   | -         |
+| 5    | Context vec dim | -     | -       | -     | 64     | -     | 64        |
+| 6    | Dropout prob    | -     | -       | -     | -      | 0.2   | -         |
 | 7    | Num LSTM layer  | -     | -       | -     | -      | 2     | -         |
 | 8    | Num DPCNN block | -     | -       | 2     | -      | -     | -         |
 
 ### Accuracy
-| More ActionsModel name | Accuracy on test set |
+| Model name             | Accuracy on test set |
 | ---------------------- | -------------------- |
 | LSTM                   | 0.82340              |
 | CNNAttn                | 0.84516              |
