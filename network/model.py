@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from .layer import LSTMLayer, CNNLayer, AttnLayer, CNNBlock
 
 __all__ = ["LSTMModel", "CNNModel", "TextCNNModel",
-           "DPCNNModel", "BiLSTMAttnModel", "CNNAttnModel"]
+           "DPCNNModel", "BiLSTMAttnModel", "CNNAttnModel", "RCNNModel"]
 
 
 def cal_seq_len(x, max_seq_len, padding_id):
@@ -33,6 +33,53 @@ class LSTMModel(nn.Module):
         x = self.lstm(x)
         # x = x[:, -1, :]
         x = x[torch.arange(batch_size), lens - 1, :]
+        out = self.linear(x)
+        return out
+
+
+class RCNNModel(nn.Module):
+    # suppose dim(BiLSTM)==dim(Embed)
+    def __init__(self, config):
+        super().__init__()
+        self.embedding = nn.Embedding(
+            config.vocab, config.embed_dim, padding_idx=config.padding_id)
+        self.bilstm = LSTMLayer(
+            config.embed_dim, config.embed_dim // 2, 1, bi=True)
+        self.encoder = nn.Linear(2 * config.embed_dim, config.hidden_dim)
+        self.linear = nn.Linear(config.hidden_dim, config.tag_dim)
+
+    def forward(self, x):
+        word = self.embedding(x)
+        context = self.bilstm(word)
+        # x.shape=(batch_size, len, 2 * embed_dim)
+        x = torch.cat([word, context], dim=-1)
+        # x.shape=(batch_size, len, hidden_dim)
+        x = self.encoder(x).tanh()
+        # x.shape=(batch_size, hidden_dim)
+        x, _ = torch.max(x, dim=1)
+        out = self.linear(x)
+        return out
+
+
+class BiLSTMAttnModel(nn.Module):
+    def __init__(self, config):
+        super().__init__()
+        self.embedding = nn.Embedding(
+            config.vocab, config.embed_dim, config.padding_id)
+        self.bilstm = LSTMLayer(
+            config.embed_dim, config.hidden_dim // 2, 1, bi=True)
+        self.attn = AttnLayer(config.hidden_dim, config.attn_dim)
+        self.linear = nn.Linear(config.hidden_dim, config.tag_dim)
+        self.padding_id = config.padding_id
+
+    def forward(self, x):
+        """
+        x : shape=(batch_size, max_len)
+        """
+        x = self.embedding(x)
+        x = self.bilstm(x)
+        # x = self.bilstm(x, lens)
+        x = self.attn(x)
         out = self.linear(x)
         return out
 
@@ -135,29 +182,6 @@ class DPCNNModel(nn.Module):
         # x．shape=(batch_size, 250)
         x, _ = torch.max(x, dim=1)
         # out.shape=(batch_size, tag_dim)
-        out = self.linear(x)
-        return out
-
-
-class BiLSTMAttnModel(nn.Module):
-    def __init__(self, config):
-        super().__init__()
-        self.embedding = nn.Embedding(
-            config.vocab, config.embed_dim, config.padding_id)
-        self.bilstm = LSTMLayer(
-            config.embed_dim, config.hidden_dim // 2, 1, bi=True)
-        self.attn = AttnLayer(config.hidden_dim, config.attn_dim)
-        self.linear = nn.Linear(config.hidden_dim, config.tag_dim)
-        self.padding_id = config.padding_id
-
-    def forward(self, x):
-        """
-        x : shape=(batch_size, max_len)
-        """
-        x = self.embedding(x)
-        x = self.bilstm(x)
-        # x = self.bilstm(x, lens)
-        x = self.attn(x)
         out = self.linear(x)
         return out
 

@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader, TensorDataset
 import argparse
 import logging
 from pathlib import Path
-from network import Config, BiLSTMAttnModel, CNNAttnModel, CNNModel, LSTMModel, TextCNNModel, DPCNNModel
+from network import Config, BiLSTMAttnModel, CNNAttnModel, CNNModel, LSTMModel, TextCNNModel, DPCNNModel, RCNNModel
 import shutil
 from util import load_word_dict, load_dataset, test_accuracy
 
@@ -102,7 +102,7 @@ class Trainer(object):
 def main():
     logger = logging.getLogger(__name__)
     parser = argparse.ArgumentParser()
-    model_map={'1': CNNModel, '2':TextCNNModel, '3':DPCNNModel, '4':CNNAttnModel, '5':LSTMModel, '6':BiLSTMAttnModel}
+    model_map={'1': CNNModel, '2':TextCNNModel, '3':DPCNNModel, '4':CNNAttnModel, '5':LSTMModel, '6':BiLSTMAttnModel, '7':RCNNModel}
 
     parser.add_argument("-i", "--input_dir", type=str, default='data', help='Dir of input data.')
     parser.add_argument("-o", "--output_dir", type=str, default='output', help='Dir to save trained model.')

@@ -42,23 +42,24 @@ https://colab.research.google.com/drive/1VJmSx-vThBFlGZYJ9sKWDMINKWOzFNCD
 `$ docker run -it wisedoge/text_clf_pytorch`
 ## Results
 ### Parameters
-| #    | Param           | CNN   | TextCNN | DPCNN | CNNAtt | LSTM  | BiLSTMAtt |
-| ---- | --------------- | ----- | ------- | ----- | ------ | ----- | --------- |
-| 1    | Vocab size      | 30000 | 30000   | 30000 | 30000  | 30000 | 30000     |
-| 2    | Max seq len     | 256   | 256     | 256   | 256    | 256   | 256       |
-| 3    | Embedding dim   | 256   | 256     | 256   | 256    | 256   | 256       |
-| 4    | Hidden dim      | 512   | 256     | 250   | 128    | 128   | 512       |
-| 5    | Context vec dim | -     | -       | -     | 64     | -     | 64        |
-| 6    | Dropout prob    | -     | -       | -     | -      | 0.2   | -         |
-| 7    | Num LSTM layer  | -     | -       | -     | -      | 2     | -         |
-| 8    | Num DPCNN block | -     | -       | 2     | -      | -     | -         |
+| #    | Param           | CNN   | TextCNN | DPCNN | CNNAtt | LSTM  | BiLSTMAtt | RCNN  |
+| ---- | --------------- | ----- | ------- | ----- | ------ | ----- | --------- | ----- |
+| 1    | Vocab size      | 30000 | 30000   | 30000 | 30000  | 30000 | 30000     | 30000 |
+| 2    | Max seq len     | 256   | 256     | 256   | 256    | 256   | 256       | 256   |
+| 3    | Embedding dim   | 256   | 256     | 256   | 256    | 256   | 256       | 256   |
+| 4    | Hidden dim      | 512   | 256     | 250   | 128    | 128   | 512       | 128   |
+| 5    | Context vec dim | -     | -       | -     | 64     | -     | 64        | -     |
+| 6    | Dropout prob    | -     | -       | -     | -      | 0.2   | -         | -     |
+| 7    | Num LSTM layer  | -     | -       | -     | -      | 2     | -         | -     |
+| 8    | Num DPCNN block | -     | -       | 2     | -      | -     | -         | -     |
 
 ### Accuracy
 | Model name             | Accuracy on test set |
 | ---------------------- | -------------------- |
-| LSTM                   | 0.82340              |
-| CNNAttn                | 0.84516              |
+| CNNAttn                | 0.82340              |
+| LSTM                   | 0.83548              |
 | CNN                    | 0.85100              |
+| RCNN                   | 0.87732              |
 | BiLSTMAttn             | 0.87780              |
 | TextCNN                | 0.87848              |
 | DPCNN                  | **0.87904**          |
