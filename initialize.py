@@ -12,8 +12,6 @@ logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 
-
-
 class Corpus(object):
     def __init__(self, input_dir):
         train_neg_dir = f'{input_dir}/train/neg'

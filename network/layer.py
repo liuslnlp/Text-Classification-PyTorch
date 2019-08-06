@@ -74,6 +74,19 @@ class LSTMLayer(nn.Module):
         x, _ = self.lstm(x)
         return x
 
+class DyLSTMLayer(nn.Module):
+    """Dynamic LSTM.
+    """
+    def __init__(self, in_dim, out_dim, n_layer, dropout=0, bi=False):
+        super().__init__()
+        self.lstm = nn.LSTM(in_dim, out_dim, batch_first=True, num_layers=n_layer, dropout=dropout, bidirectional=bi)
+
+    def forward(self, x, lens):
+        pack = nn.utils.rnn.pack_padded_sequence(x, lens, batch_first=True, enforce_sorted=False)
+        out, _ = self.lstm(pack)
+        unpacked, _ = nn.utils.rnn.pad_packed_sequence(out, batch_first=True)
+        return unpacked
+
 
 class AttnLayer(nn.Module):
     """Attention layer.
