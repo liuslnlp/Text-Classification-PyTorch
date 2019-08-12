@@ -121,10 +121,7 @@ def main():
     parser.add_argument("--n_block", type=int, default=5, help='Number of blocks(for DPCNN).')
     parser.add_argument("--dropout", type=float, default=0.2, help='Dropout probability.')
     parser.add_argument("--no_cuda", action='store_true', help='Whether not use CUDA.')
-    parser.add_argument("--alg", type=str, default='123456', help=f'Model to train. {model_map}')
-
-
-
+    parser.add_argument("--alg", type=str, default='1234567', help=f'Model to train. {model_map}')
     args = parser.parse_args()
 
     device = torch.device('cuda' if torch.cuda.is_available()
@@ -149,10 +146,9 @@ def main():
     testset = TensorDataset(test_tokens, test_labels)
     testloader = DataLoader(testset, batch_size=args.batch_size)
 
-    
-
     logger.info(f"***** Initializing models. *****")
     models = [v(config) for k, v in model_map.items() if k in args.alg]
+
     logger.info(f"***** Training. *****")
     for model in models:
         trainer = Trainer(model, trainloader, testloader, device, args)

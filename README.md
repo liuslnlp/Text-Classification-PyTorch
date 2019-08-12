@@ -24,8 +24,7 @@ documents for unsupervised learning.
 3. **Initialize data.**  
 `$ python initialize.py`  
 Or use `$ python initialize.py -h` for help.  
-4. **Train.**  
-`$ !rm -rf output`  
+4. **Train.**    
 `$ python train.py`  
 Or use `$ python train.py -h` for help.  
 5. **Evaluation.**  
