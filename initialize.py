@@ -1,7 +1,7 @@
 from typing import List, Dict
 from collections import defaultdict
 from pathlib import Path
-from util import save_dataset, save_word_dict
+from util import save_dataset, save_word_dict, save_embedding
 import torch
 import argparse
 import nltk
@@ -91,6 +91,29 @@ def create_dataset(neg, pos, word_dict, max_seq_len):
     labels = torch.cat([neg_labels, pos_labels], 0)
     return tokens, labels
 
+def load_pretrained_glove(path, freq_dict, max_size):
+    word_dict = {'[PAD]': 0, '[UNK]': 1}
+    embedding = []
+
+    sorted_items = sorted(freq_dict.items(), key=lambda t: t[1], reverse=True)[:max_size]
+    freq_word_set = {word for word, _ in sorted_items}
+
+    with open(path, 'r', encoding='utf-8') as f:
+        vecs = f.readlines()
+        for line in vecs:
+            line = line.strip().split()
+            word, *vec = line
+            if word in freq_word_set:
+                add_to_vocab(word, word_dict)
+                vec = [float(num) for num in vec]
+                embedding.append(vec)
+
+    embedding = torch.tensor(embedding, dtype=torch.float)
+    embedding_dim = embedding.size(1)
+    pad = torch.randn(1, embedding_dim)
+    unk = torch.randn(1, embedding_dim)
+    embedding = torch.cat([pad, unk, embedding], 0)
+    return word_dict, embedding
 
 if __name__ == "__main__":
     nltk.download('punkt')
@@ -101,6 +124,8 @@ if __name__ == "__main__":
                         help='Folder to save the tensor format of dataset.')
     parser.add_argument("--max_seq_len", type=int, default=256, help='Max sequence length.')
     parser.add_argument("--max_vocab_size", type=int, default=30000, help='Max vocab size.')
+    parser.add_argument("--glove_path", type=str, default=None, help='Pre-trained word embedding path.')
+
     args = parser.parse_args()
 
     logger.info(
@@ -114,7 +139,12 @@ if __name__ == "__main__":
     logger.info(f"Total number of words: {len(freq_dict)}")
 
     logger.info("Building vocab...")
-    word_dict = build_vocab(freq_dict, args.max_vocab_size)
+    if args.glove_path is not None:
+        glove_path = Path(args.glove_path)
+        word_dict, embedding = load_pretrained_glove(glove_path, freq_dict, args.max_vocab_size)
+        logger.info(f"Embedding dim: {embedding.shape[1]}")
+    else:
+        word_dict = build_vocab(freq_dict, args.max_vocab_size)
     logger.info(f"Vocab size: {len(word_dict)}")
 
     logger.info("Creating train dataset...")
@@ -127,9 +157,11 @@ if __name__ == "__main__":
     saved_dir = Path(args.output_dir)
     saved_dir.mkdir(parents=True, exist_ok=True)
 
-    logger.info("Saving dataset and word dict...")
+    logger.info("Saving dataset and word dict[and embedding]...")
     save_word_dict(word_dict, saved_dir)
     save_dataset(train_tokens, train_labels, saved_dir, 'train')
     save_dataset(test_tokens, test_labels, saved_dir, 'test')
+    if args.glove_path is not None:
+        save_embedding(embedding, saved_dir)
 
     logger.info("All done!")

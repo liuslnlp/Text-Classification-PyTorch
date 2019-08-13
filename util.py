@@ -2,6 +2,14 @@ import torch
 import pickle
 
 
+def save_embedding(embedding, saved_dir):
+    torch.save(embedding, saved_dir / f'embedding.pt')
+
+
+def load_embedding(saved_dir):
+    return torch.load(saved_dir / f'embedding.pt')
+
+
 def save_word_dict(word_dict, saved_dir):
     with open(saved_dir / 'vocab.dict', 'wb') as f:
         pickle.dump(word_dict, f)

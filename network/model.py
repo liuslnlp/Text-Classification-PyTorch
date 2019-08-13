@@ -11,11 +11,16 @@ def cal_seq_len(x, max_seq_len, padding_id):
     return max_seq_len - (x == padding_id).sum(dim=-1)
 
 
-class LSTMModel(nn.Module):
+class BaseModel(nn.Module):
     def __init__(self, config):
         super().__init__()
         self.embedding = nn.Embedding(
             config.vocab, config.embed_dim, padding_idx=config.padding_id)
+
+
+class LSTMModel(BaseModel):
+    def __init__(self, config):
+        super().__init__(config)
         self.lstm = LSTMLayer(
             config.embed_dim, config.hidden_dim, config.n_layer, dropout=config.dropout)
         self.linear = nn.Linear(config.hidden_dim, config.tag_dim)
@@ -37,12 +42,10 @@ class LSTMModel(nn.Module):
         return out
 
 
-class RCNNModel(nn.Module):
+class RCNNModel(BaseModel):
     # suppose dim(BiLSTM)==dim(Embed)
     def __init__(self, config):
-        super().__init__()
-        self.embedding = nn.Embedding(
-            config.vocab, config.embed_dim, padding_idx=config.padding_id)
+        super().__init__(config)
         self.bilstm = LSTMLayer(
             config.embed_dim, config.embed_dim // 2, 1, bi=True)
         self.encoder = nn.Linear(2 * config.embed_dim, config.hidden_dim)
@@ -61,11 +64,9 @@ class RCNNModel(nn.Module):
         return out
 
 
-class BiLSTMAttnModel(nn.Module):
+class BiLSTMAttnModel(BaseModel):
     def __init__(self, config):
-        super().__init__()
-        self.embedding = nn.Embedding(
-            config.vocab, config.embed_dim, config.padding_id)
+        super().__init__(config)
         self.bilstm = LSTMLayer(
             config.embed_dim, config.hidden_dim // 2, 1, bi=True)
         self.attn = AttnLayer(config.hidden_dim, config.attn_dim)
@@ -84,11 +85,9 @@ class BiLSTMAttnModel(nn.Module):
         return out
 
 
-class CNNModel(nn.Module):
+class CNNModel(BaseModel):
     def __init__(self, config):
-        super().__init__()
-        self.embedding = nn.Embedding(
-            config.vocab, config.embed_dim, padding_idx=config.padding_id)
+        super().__init__(config)
         self.conv = CNNLayer(config.embed_dim, config.hidden_dim)
         self.linear = nn.Linear(config.hidden_dim, config.tag_dim)
 
@@ -109,11 +108,9 @@ class CNNModel(nn.Module):
         return out
 
 
-class TextCNNModel(nn.Module):
+class TextCNNModel(BaseModel):
     def __init__(self, config):
-        super().__init__()
-        self.embedding = nn.Embedding(
-            config.vocab, config.embed_dim, config.padding_id)
+        super().__init__(config)
         # self.conv1 = CNNLayer(config.embed_dim, 2, 2, 0)
         # self.conv2 = CNNLayer(config.embed_dim, 2, 3, 0)
         # self.conv3 = CNNLayer(config.embed_dim, 2, 4, 0)
@@ -149,11 +146,9 @@ class TextCNNModel(nn.Module):
         return out
 
 
-class DPCNNModel(nn.Module):
+class DPCNNModel(BaseModel):
     def __init__(self, config):
-        super().__init__()
-        self.embedding = nn.Embedding(
-            config.vocab, config.embed_dim, config.padding_id)
+        super().__init__(config)
         hidden_dim = 250
         self.region_embedding = CNNLayer(config.embed_dim, hidden_dim, 3, 1)
         self.conv1 = CNNLayer(hidden_dim, hidden_dim, 3, 1)
@@ -186,11 +181,9 @@ class DPCNNModel(nn.Module):
         return out
 
 
-class CNNAttnModel(nn.Module):
+class CNNAttnModel(BaseModel):
     def __init__(self, config):
-        super().__init__()
-        self.embedding = nn.Embedding(
-            config.vocab, config.embed_dim, config.padding_id)
+        super().__init__(config)
         self.cnn = CNNLayer(config.embed_dim, config.hidden_dim)
         self.attn = AttnLayer(config.hidden_dim, config.attn_dim)
         self.linear = nn.Linear(config.hidden_dim, config.tag_dim)

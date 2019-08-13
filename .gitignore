@@ -13,7 +13,7 @@ prcurve.png
 demo.py
 # C extensions
 *.so
-
+glove.6B
 # Distribution / packaging
 .Python
 build/

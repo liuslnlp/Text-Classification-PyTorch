@@ -7,7 +7,7 @@ import logging
 from pathlib import Path
 from network import Config, BiLSTMAttnModel, CNNAttnModel, CNNModel, LSTMModel, TextCNNModel, DPCNNModel, RCNNModel
 import shutil
-from util import load_word_dict, load_dataset, test_accuracy
+from util import load_word_dict, load_dataset, test_accuracy, load_embedding
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -72,6 +72,14 @@ class Trainer(object):
         self.testloader = testloader
         self.test_acc_lst = torch.zeros(args.epochs)
 
+        if self.args.glove is not None:
+            self.load_pretrain_embedding()
+
+    def load_pretrain_embedding(self):
+        embed_tensor = load_embedding(Path(self.args.input_dir))
+        embed_dim = embed_tensor.shape[1]
+        self.model.embedding.weight.data[:, :embed_dim].copy_(embed_tensor)
+
     def fit(self):
         args = self.args
         model = self.model
@@ -120,7 +128,8 @@ def main():
     parser.add_argument("--n_layer", type=int, default=2, help='Number of layers(for LSTM).')
     parser.add_argument("--n_block", type=int, default=5, help='Number of blocks(for DPCNN).')
     parser.add_argument("--dropout", type=float, default=0.2, help='Dropout probability.')
-    parser.add_argument("--no_cuda", action='store_true', help='Whether not use CUDA.')
+    parser.add_argument("--no_cuda", action='store_true', help='Whether not to use CUDA.')
+    parser.add_argument("--glove", action='store_true', help='Whether to use CUDA.')
     parser.add_argument("--alg", type=str, default='1234567', help=f'Model to train. {model_map}')
     args = parser.parse_args()
 
