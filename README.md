@@ -1,5 +1,5 @@
 # Text-Classification-PyTorch
-This repo implements 6 text classification algorithms(`CNN`, `CNN+Attention`, `TextCNN`, `DPCNN`, `LSTM`, `Bi-LSTM+Attention`) and a train-eval pipeline.
+This repo implements 7 text classification algorithms(`CNN`, `CNN+Attention`, `TextCNN`, `DPCNN`, `LSTM`, `Bi-LSTM+Attention`, `RCNN`) and a train-eval pipeline.
 ## Requirements
 * python 3.6+
 * torch==1.1.0
@@ -21,16 +21,19 @@ documents for unsupervised learning.
 2. **Download dataset.**  
 `$ wget http://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz`   
 `$ tar -zxvf aclImdb_v1.tar.gz`  
-3. **Initialize data.**  
+3. **Download pre-trained word vectors(Optional).**  
+`$ wget http://nlp.stanford.edu/data/glove.6B.zip`  
+`$ unzip glove.6B.zip -d glove`  
+4. **Initialize data.**  
 `$ python initialize.py`  
 Or use `$ python initialize.py -h` for help.  
-4. **Train.**    
+5. **Train.**    
 `$ python train.py`  
 Or use `$ python train.py -h` for help.  
-5. **Evaluation.**  
+6. **Evaluation.**  
 `$ python eval.py`  
 Or use `$ python eval.py -h` for help.  
-6. **Check evaluation results.**  
+7. **Check evaluation results.**  
 Open `--name` file to view PR curve.
 ## Training in Google Colab
 https://colab.research.google.com/drive/1VJmSx-vThBFlGZYJ9sKWDMINKWOzFNCD
@@ -51,6 +54,7 @@ https://colab.research.google.com/drive/1VJmSx-vThBFlGZYJ9sKWDMINKWOzFNCD
 | 6    | Dropout prob    | -     | -       | -     | -      | 0.2   | -         | -     |
 | 7    | Num LSTM layer  | -     | -       | -     | -      | 2     | -         | -     |
 | 8    | Num DPCNN block | -     | -       | 2     | -      | -     | -         | -     |
+\* *You can also set `--max_seq_len=512` and `--glove_path=your glove path/glove.6B.*d.txt` to build large model for better accuarcy(>= 0.9).*
 
 ### Accuracy
 | Model name             | Accuracy on test set |
