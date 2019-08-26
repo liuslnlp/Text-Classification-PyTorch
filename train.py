@@ -41,7 +41,8 @@ class ModelCache(object):
         """
         best_score, epoch = torch.max(scores, 0)
         if verbose:
-            print(f"Model name: {self.name}, Best epoch: {epoch.item()}, Best score: {best_score.item()}")
+            print(
+                f"Model name: {self.name}, Best epoch: {epoch.item()}, Best score: {best_score.item()}")
         filename = f"{self.name}_{epoch.item()}.pkl"
         src_filename = self.cache_dir / filename
         dst_filename = target_dir / filename
@@ -110,31 +111,45 @@ class Trainer(object):
 def main():
     logger = logging.getLogger(__name__)
     parser = argparse.ArgumentParser()
-    model_map={'1': CNNModel, '2':TextCNNModel, '3':DPCNNModel, '4':CNNAttnModel, '5':LSTMModel, '6':BiLSTMAttnModel, '7':RCNNModel}
+    model_map = {'1': CNNModel, '2': TextCNNModel, '3': DPCNNModel,
+                 '4': CNNAttnModel, '5': LSTMModel, '6': BiLSTMAttnModel, '7': RCNNModel}
 
-    parser.add_argument("-i", "--input_dir", type=str, default='data', help='Dir of input data.')
-    parser.add_argument("-o", "--output_dir", type=str, default='output', help='Dir to save trained model.')
-    parser.add_argument("--cache_dir", type=str, default='cache', help='Temporary folder to save trained model.')
+    parser.add_argument("-i", "--input_dir", type=str,
+                        default='data', help='Dir of input data.')
+    parser.add_argument("-o", "--output_dir", type=str,
+                        default='output', help='Dir to save trained model.')
+    parser.add_argument("--cache_dir", type=str, default='cache',
+                        help='Temporary folder to save trained model.')
     parser.add_argument("--epochs", type=int, default=15)
     parser.add_argument("--batch_size", type=int, default=128)
     parser.add_argument("--lr", type=float, default=0.001)
     parser.add_argument("--print_step", type=int, default=5)
 
-    parser.add_argument("--max_seq_len", type=int, default=256, help='Max sequence length.')
-    parser.add_argument("--embed_dim", type=int, default=256, help='Word embedding dim.')
-    parser.add_argument("--hidden_dim", type=int, default=128, help='Hidden dim.')
-    parser.add_argument("--attn_dim", type=int, default=128, help='Context vector dim(for attention model).')
+    parser.add_argument("--max_seq_len", type=int,
+                        default=256, help='Max sequence length.')
+    parser.add_argument("--embed_dim", type=int,
+                        default=256, help='Word embedding dim.')
+    parser.add_argument("--hidden_dim", type=int,
+                        default=128, help='Hidden dim.')
+    parser.add_argument("--attn_dim", type=int, default=128,
+                        help='Context vector dim(for attention model).')
     parser.add_argument("--tag_dim", type=int, default=2, help='Target size.')
-    parser.add_argument("--n_layer", type=int, default=2, help='Number of layers(for LSTM).')
-    parser.add_argument("--n_block", type=int, default=5, help='Number of blocks(for DPCNN).')
-    parser.add_argument("--dropout", type=float, default=0.2, help='Dropout probability.')
-    parser.add_argument("--no_cuda", action='store_true', help='Whether not to use CUDA.')
-    parser.add_argument("--glove", action='store_true', help='Whether to use CUDA.')
-    parser.add_argument("--alg", type=str, default='1234567', help=f'Model to train. {model_map}')
+    parser.add_argument("--n_layer", type=int, default=2,
+                        help='Number of layers(for LSTM).')
+    parser.add_argument("--n_block", type=int, default=5,
+                        help='Number of blocks(for DPCNN).')
+    parser.add_argument("--dropout", type=float,
+                        default=0.2, help='Dropout probability.')
+    parser.add_argument("--no_cuda", action='store_true',
+                        help='Whether not to use CUDA.')
+    parser.add_argument("--glove", action='store_true',
+                        help='Whether to use CUDA.')
+    parser.add_argument("--alg", type=str, default='1234567',
+                        help=f'Model to train. {model_map}')
     args = parser.parse_args()
 
     device = torch.device('cuda' if torch.cuda.is_available()
-                                    and not args.no_cuda else 'cpu')
+                          and not args.no_cuda else 'cpu')
     input_dir = Path(args.input_dir)
     word_to_ix = load_word_dict(input_dir)
     vocab_size = len(word_to_ix)
@@ -159,12 +174,16 @@ def main():
     models = [v(config) for k, v in model_map.items() if k in args.alg]
 
     logger.info(f"***** Training. *****")
+    logger.info(f"[Batch size]: {args.batch_size}, [Learning rate]: {args.lr}, [Epochs]: {args.epochs}")
+    logger.info(f"[Max sequence length]: {args.max_seq_len}, [No CUDA]: {args.no_cuda}")
+
     for model in models:
         trainer = Trainer(model, trainloader, testloader, device, args)
         logger.info(f"Training {trainer.model_name}...")
         trainer.fit()
 
     logger.info(f"***** All Done. *****")
+
 
 if __name__ == "__main__":
     main()

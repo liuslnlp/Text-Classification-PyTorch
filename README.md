@@ -54,7 +54,9 @@ https://colab.research.google.com/drive/1VJmSx-vThBFlGZYJ9sKWDMINKWOzFNCD
 | 6    | Dropout prob    | -     | -       | -     | -      | 0.2   | -         | -     |
 | 7    | Num LSTM layer  | -     | -       | -     | -      | 2     | -         | -     |
 | 8    | Num DPCNN block | -     | -       | 2     | -      | -     | -         | -     |
-\* *You can also set `--max_seq_len=512` and `--glove_path=your glove path/glove.6B.*d.txt` to build large model for better accuarcy(>= 0.9).*
+    
+\* *You can also set `--max_seq_len=512`(longer sequence length) and `--glove_path=your glove path/glove.6B.*d.txt`(use pre-trained word vectors) to build large model for better accuarcy(>= 0.9).*  
+
 
 ### Accuracy
 | Model name             | Accuracy on test set |
@@ -66,6 +68,8 @@ https://colab.research.google.com/drive/1VJmSx-vThBFlGZYJ9sKWDMINKWOzFNCD
 | BiLSTMAttn             | 0.87780              |
 | TextCNN                | 0.87848              |
 | DPCNN                  | **0.87904**          |
+
+
 ### PR-Curve
 ![](docs/prcurve.svg)  
 
